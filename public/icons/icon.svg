@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#0366d6"/>
+  <g>
+    <!-- Envelope body -->
+    <rect x="12" y="24" width="40" height="24" rx="4" fill="#fff"/>
+    <polyline points="12,24 32,40 52,24" fill="none" stroke="#0366d6" stroke-width="2"/>
+    <!-- Envelope flap -->
+    <polygon points="12,24 32,8 52,24" fill="#e3f2fd" stroke="#0366d6" stroke-width="2"/>
+    <!-- Sound waves (3 lines) -->
+    <path d="M42 36 Q48 32 42 28" fill="none" stroke="#ffb600" stroke-width="2"/>
+    <path d="M46 38 Q54 32 46 26" fill="none" stroke="#ffb600" stroke-width="2"/>
+    <path d="M50 40 Q60 32 51 24" fill="none" stroke="#ffb600" stroke-width="2"/>
+  </g>
+</svg>
