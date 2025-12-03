@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VoiceNote → Email</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>VoiceNote → Email</h1>
+
+    <section id="settingsArea" class="panel">
+      <h2>Settings</h2>
+      <div class="setting-group">
+        <label for="apiKey">OpenAI API Key:</label>
+        <div class="key-input-row">
+          <input type="password" id="apiKey" placeholder="sk-..." />
+          <button id="saveKeyBtn">Save</button>
+          <button id="clearKeyBtn">Clear</button>
+        </div>
+        <small>Your key is stored locally in your browser. It is never sent to any server.</small>
+      </div>
+      <div class="setting-group">
+        <label for="transModel">Transcription Model:</label>
+        <select id="transModel"><option value="whisper-1">whisper-1</option></select>
+      </div>
+      <div class="setting-group">
+        <label for="textModel">Text Model:</label>
+        <select id="textModel"><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option></select>
+      </div>
+      <div class="setting-group">
+        <label for="styleSelect">Email Style:</label>
+        <select id="styleSelect"><option value="formal">Formal</option><option value="conversational">Conversational</option><option value="call-to-action">Call to action</option></select>
+      </div>
+    </section>
+
+    <section id="controls">
+      <div id="status">Idle</div>
+      <button id="recordBtn">Record (up to 5 minutes)</button>
+      <button id="stopBtn" disabled>Stop</button>
+    </section>
+
+    <section id="transcriptArea" class="panel" hidden>
+      <h2>Transcript</h2>
+      <pre id="transcriptText"></pre>
+      <div class="buttons">
+        <button id="reRecord">Record Again</button>
+        <button id="useTranscript">Use Transcript</button>
+      </div>
+    </section>
+
+    <section id="emailArea" class="panel" hidden>
+      <h2>Generated Email</h2>
+      <pre id="emailText"></pre>
+      <div class="buttons">
+        <button id="copyEmail">Copy to Clipboard</button>
+        <button id="tweakEmail">Tweak by Recording</button>
+      </div>
+    </section>
+
+    <footer>
+      <small>This is a client-side PWA. Your API key is stored locally in your browser and used only for API calls to OpenAI.</small>
+    </footer>
+  </main>
+
+  <script type="module" src="/src/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>

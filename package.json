@@ -1,0 +1,16 @@
+{
+  "name": "voicenote-to-email-pwa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Client-side PWA that records voice notes, transcribes via OpenAI, and formats as email.",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": ["pwa","openai","transcription","voice","email"],
+  "author": "lightbulbheaduk",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^29.6.1"
+  }
+}

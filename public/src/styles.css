@@ -1,0 +1,22 @@
+:root{--bg:#f7f8fb;--card:#fff;--accent:#0366d6}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;padding:0;margin:0;background:var(--bg);color:#111}
+.container{max-width:720px;margin:32px auto;padding:20px}
+h1{margin:0 0 16px}
+h2{margin:12px 0 8px;font-size:18px}
+.panel{background:var(--card);padding:12px;border-radius:8px;margin-top:12px}
+#controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+#status{padding:6px 10px;background:#e3f2fd;border-radius:4px;font-size:14px;min-width:80px}
+button{background:var(--accent);color:white;padding:8px 12px;border:0;border-radius:6px;cursor:pointer;font-size:14px}
+button[disabled]{opacity:.5;cursor:not-allowed}
+button:hover:not([disabled]){background:#0253a8}
+pre{white-space:pre-wrap;background:#f3f4f6;padding:10px;border-radius:6px;overflow-x:auto}
+.buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+footer{margin-top:18px;color:#666;font-size:13px}
+.setting-group{margin-bottom:12px}
+label{display:block;font-weight:500;margin-bottom:4px;font-size:14px}
+input[type="password"],select{width:100%;max-width:300px;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-size:14px}
+.key-input-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.key-input-row input{flex:1;min-width:150px}
+.key-input-row button{margin:0;padding:6px 10px}
+small{display:block;margin-top:4px;color:#666}
+
