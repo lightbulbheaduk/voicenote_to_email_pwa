@@ -111,6 +111,9 @@ async function onRecordingStop() {
     currentStream = null;
   }
 
+  // belt and braces
+  navigator.mediaDevices.getUserMedia({ audio: false });
+
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
   
   // Transcribe audio using OpenAI API directly
@@ -248,6 +251,9 @@ async function onTweakRecordingStop() {
     tweakStream.getTracks().forEach(track => track.stop());
     tweakStream = null;
   }
+
+  // belt and braces
+  navigator.mediaDevices.getUserMedia({ audio: false });
 
   statusEl.textContent = 'Processing tweak instructions...';
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
