@@ -9,13 +9,19 @@ const emailArea = document.getElementById('emailArea');
 const emailText = document.getElementById('emailText');
 const copyEmailBtn = document.getElementById('copyEmail');
 const tweakEmailBtn = document.getElementById('tweakEmail');
-
 const apiKeyInput = document.getElementById('apiKey');
 const saveKeyBtn = document.getElementById('saveKeyBtn');
 const clearKeyBtn = document.getElementById('clearKeyBtn');
 const transModelEl = document.getElementById('transModel');
 const textModelEl = document.getElementById('textModel');
 const styleSelect = document.getElementById('styleSelect');
+const settingsArea = document.getElementById('settingsArea');
+const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+
+toggleSettingsBtn.addEventListener('click', () => {
+  const collapsed = settingsArea.classList.toggle('collapsed');
+  toggleSettingsBtn.textContent = collapsed ? 'Show Settings' : 'Hide Settings';
+});
 
 let mediaRecorder;
 let currentStream;
@@ -24,6 +30,7 @@ let tweakRecorder;
 let tweakStream;
 let tweakTimeout;
 let recordedChunks = [];
+
 
 
 // Load API key from localStorage on page load

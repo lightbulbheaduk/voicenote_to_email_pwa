@@ -19,4 +19,24 @@ input[type="password"],select{width:100%;max-width:300px;padding:6px 8px;border:
 .key-input-row input{flex:1;min-width:150px}
 .key-input-row button{margin:0;padding:6px 10px}
 small{display:block;margin-top:4px;color:#666}
+.info-panel {
+  background: #e3f2fd;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 15px;
+}
+.collapser {
+  background: #ddd;
+  color: #0366d6;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+#settingsArea.collapsed {
+  display: none;
+}
 

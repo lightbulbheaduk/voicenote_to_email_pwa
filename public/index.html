@@ -8,10 +8,24 @@
   <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
+  <section id="instructions" class="info-panel">
+  <h2>Get Started</h2>
+  <p>
+    To add this app to your device, open your browser's menu and select <b>"Add to Home Screen"</b>.<br>
+    For help, <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Installable_PWAs" target="_blank">see these PWA install steps</a>.
+  </p>
+  <p>
+    You’ll need an OpenAI API key to use this app. Get your API key 
+    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">here</a>.
+  </p>
+</section>
   <main class="container">
     <h1>VoiceNote → Email</h1>
 
-    <section id="settingsArea" class="panel">
+    <!-- Collapsed settings trigger -->
+    <button id="toggleSettingsBtn" class="collapser">Show Settings</button>
+    <section id="settingsArea" class="panel collapsed">
+  
       <h2>Settings</h2>
       <div class="setting-group">
         <label for="apiKey">OpenAI API Key:</label>
@@ -32,7 +46,7 @@
       </div>
       <div class="setting-group">
         <label for="styleSelect">Email Style:</label>
-        <select id="styleSelect"><option value="formal">Formal</option><option value="conversational">Conversational</option><option value="call-to-action">Call to action</option></select>
+        <select id="styleSelect"><option value="conversation">Conversation</option><option value="formal">Formal</option><option value="call-to-action">Call to action</option></select>
       </div>
     </section>
 
