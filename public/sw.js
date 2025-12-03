@@ -1,7 +1,7 @@
 const CACHE_NAME = 'voicenote-pwa-v1';
 const ASSETS = [
-  '/', '/index.html', '/src/styles.css', '/src/app.js', '/manifest.json',
-  '/icons/icon-192.png', '/icons/icon-512.png'
+  './', 'index.html', 'src/styles.css', 'src/app.js', 'manifest.json',
+  'icons/icon-192.png', 'icons/icon-512.png'
 ];
 
 // Install: Cache assets
