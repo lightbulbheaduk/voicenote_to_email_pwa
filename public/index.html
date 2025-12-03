@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>VoiceNote → Email</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="/src/styles.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
   <main class="container">
@@ -65,10 +65,10 @@
     </footer>
   </main>
 
-  <script type="module" src="/src/app.js"></script>
+  <script type="module" src="./src/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(console.error);
+      navigator.serviceWorker.register('./sw.js').catch(console.error);
     }
   </script>
 </body>
