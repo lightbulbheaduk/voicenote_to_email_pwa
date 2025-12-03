@@ -18,8 +18,13 @@ const textModelEl = document.getElementById('textModel');
 const styleSelect = document.getElementById('styleSelect');
 
 let mediaRecorder;
-let recordedChunks = [];
+let currentStream;
 let recordTimeout;
+let tweakRecorder;
+let tweakStream;
+let tweakTimeout;
+let recordedChunks = [];
+
 
 // Load API key from localStorage on page load
 window.addEventListener('load', () => {
@@ -74,8 +79,8 @@ recordBtn.addEventListener('click', async () => {
   const ok = await ensureMicPermission();
   if (!ok) return;
   recordedChunks = [];
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
+  currentStream = await navigator.mediaDevices.getUserMedia({ audio: true }); // <--- store stream globally
+  mediaRecorder = new MediaRecorder(currentStream);
   mediaRecorder.addEventListener('dataavailable', e => {
     if (e.data && e.data.size > 0) recordedChunks.push(e.data);
   });
@@ -101,9 +106,14 @@ async function onRecordingStop() {
   recordBtn.disabled = false;
   stopBtn.disabled = true;
 
+  if (currentStream) { // <--- stop tracks after recording is done
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
   
-  // Transcribe audio using OpenAI Whisper API directly
+  // Transcribe audio using OpenAI API directly
   try {
     const apiKey = getApiKey();
     if (!apiKey) return;
@@ -195,68 +205,99 @@ copyEmailBtn.addEventListener('click', async () => {
   }
 });
 
-// Tweak flow: record instructions, transcribe, then re-run generation with tweakInstructions
 tweakEmailBtn.addEventListener('click', async () => {
   const ok = await ensureMicPermission();
   if (!ok) return;
+
+  if (tweakRecorder && tweakRecorder.state === 'recording') {
+    alert('Tweak recording already in progress.');
+    return;
+  }
+
   recordedChunks = [];
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const mr = new MediaRecorder(stream);
-  mr.addEventListener('dataavailable', e => { if (e.data && e.data.size) recordedChunks.push(e.data); });
-  mr.start();
-  statusEl.textContent = 'Recording tweak instructions (max 2 minutes)...';
-  setTimeout(() => { if (mr.state === 'recording') mr.stop(); }, 120000);
-  mr.addEventListener('stop', async () => {
-    statusEl.textContent = 'Processing tweak instructions...';
-    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-    try {
-      const apiKey = getApiKey();
-      if (!apiKey) return;
-
-      const form = new FormData();
-      form.append('file', blob, 'tweak.webm');
-      form.append('model', transModelEl.value);
-      const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: form
-      });
-      const j = await resp.json();
-      if (!resp.ok) return alert('Tweak transcription error: ' + (j.error?.message || JSON.stringify(j)));
-
-      const tweakText = j.text || '';
-      // Re-run generation with tweak instructions
-      const origTranscript = transcriptText.textContent.trim();
-      const prompt = `Style: ${styleSelect.value}\n\nOriginal Notes:\n${origTranscript}\n\nTweak Instructions:\n${tweakText}`;
-      const genResp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: textModelEl.value,
-          messages: [
-            { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Apply the tweak instructions to improve the previous email. Use headings, paragraphs, bullet points and a sign-off when appropriate.' },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: 800
-        })
-      });
-      const genJ = await genResp.json();
-      if (genResp.ok) {
-        const text = (genJ.choices && genJ.choices[0] && genJ.choices[0].message && genJ.choices[0].message.content) || '';
-        emailText.textContent = text;
-        statusEl.textContent = 'Email updated with tweaks';
-      } else {
-        alert('Generation error: ' + (genJ.error?.message || JSON.stringify(genJ)));
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Tweak flow failed: ' + err.message);
-    }
+  tweakStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  tweakRecorder = new MediaRecorder(tweakStream);
+  tweakRecorder.addEventListener('dataavailable', e => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
   });
+
+  tweakRecorder.addEventListener('stop', onTweakRecordingStop);
+
+  tweakRecorder.start();
+  statusEl.textContent = 'Recording tweak instructions (max 2 minutes)...';
+  tweakEmailBtn.disabled = true;
+  stopTweakBtn.disabled = false; // <-- enable stop button
+
+  tweakTimeout = setTimeout(() => {
+    if (tweakRecorder && tweakRecorder.state === 'recording') tweakRecorder.stop();
+  }, 120000); // 2 minutes
 });
+
+stopTweakBtn.addEventListener('click', () => {
+  if (tweakRecorder && tweakRecorder.state === 'recording') {
+    tweakRecorder.stop();
+  }
+});
+
+async function onTweakRecordingStop() {
+  clearTimeout(tweakTimeout);
+  stopTweakBtn.disabled = true; // <-- disable after stopping
+  tweakEmailBtn.disabled = false;
+
+  if (tweakStream) {
+    tweakStream.getTracks().forEach(track => track.stop());
+    tweakStream = null;
+  }
+
+  statusEl.textContent = 'Processing tweak instructions...';
+  const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+  try {
+    const apiKey = getApiKey();
+    if (!apiKey) return;
+
+    const form = new FormData();
+    form.append('file', blob, 'tweak.webm');
+    form.append('model', transModelEl.value);
+    const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: form
+    });
+    const j = await resp.json();
+    if (!resp.ok) return alert('Tweak transcription error: ' + (j.error?.message || JSON.stringify(j)));
+
+    const tweakText = j.text || '';
+    // Re-run generation with tweak instructions
+    const origTranscript = transcriptText.textContent.trim();
+    const prompt = `Style: ${styleSelect.value}\n\nOriginal Notes:\n${origTranscript}\n\nTweak Instructions:\n${tweakText}`;
+    const genResp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: textModelEl.value,
+        messages: [
+          { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Apply the tweak instructions to improve the previous email. Use headings, paragraphs, bullet points and a sign-off when appropriate.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 800
+      })
+    });
+    const genJ = await genResp.json();
+    if (genResp.ok) {
+      const text = (genJ.choices && genJ.choices[0] && genJ.choices[0].message && genJ.choices[0].message.content) || '';
+      emailText.textContent = text;
+      statusEl.textContent = 'Email updated with tweaks';
+    } else {
+      alert('Generation error: ' + (genJ.error?.message || JSON.stringify(genJ)));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Tweak flow failed: ' + err.message);
+  }
+}
 
