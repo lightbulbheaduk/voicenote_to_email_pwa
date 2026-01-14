@@ -28,6 +28,25 @@ function addStatus(message) {
   summary.textContent = 'Status Log: ' + message;
 }
 
+let deferredInstallEvent;
+const installButton = document.getElementById('installButton');
+const instructionsSection = document.getElementById('instructions');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallEvent = e;
+  installButton.style.display = 'block';
+});
+
+installButton.addEventListener('click', () => {
+  if (deferredInstallEvent) {
+    deferredInstallEvent.prompt();
+    deferredInstallEvent = null;
+    installButton.style.display = 'none';
+    instructionsSection.style.display = 'none'; // Hide after install attempt
+  }
+});
+
 toggleSettingsBtn.addEventListener('click', () => {
   const collapsed = settingsArea.classList.toggle('collapsed');
   toggleSettingsBtn.textContent = collapsed ? 'Show Settings' : 'Hide Settings';
