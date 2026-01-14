@@ -70,12 +70,13 @@ TODO!
 
 Users can select different models in the Settings panel:
 
-- **Transcription:** `whisper-1` (OpenAI's audio transcription model)
+- **Transcription:** `whisper-1` or `gpt-4o-mini-transcribe` (OpenAI's audio transcription models)
 - **Text generation:** `gpt-4o-mini` or `gpt-4o` (choose based on budget/quality)
 - **Email style:** Informal, Conversational, Formal, or Call to Action
 
 Costs:
-- Whisper: ~$0.02 per minute of audio
+- Whisper: ~$0.006 per minute of audio
+- GPT-4o-mini-transcribe: ~$0.003/min per minute of audio
 - GPT-4o-mini: cheaper text model (~$0.00015 per 1K input tokens)
 - GPT-4o: more capable (~$0.005 per 1K input tokens)
 
