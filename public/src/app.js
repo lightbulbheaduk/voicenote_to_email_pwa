@@ -20,6 +20,21 @@ const styleSelect = document.getElementById('styleSelect');
 const settingsArea = document.getElementById('settingsArea');
 const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
 
+const COST_WHISPER = 0.006; // per minute
+const COST_GPT_TRANSCRIBE = 0.003; // per minute
+const COST_GPT_MINI = 0.00015; // per 1K tokens
+const COST_GPT4 = 0.005; // per 1K tokens
+
+const transCosts = {
+  'whisper-1': COST_WHISPER,
+  'gpt-4o-mini-transcribe': COST_GPT_TRANSCRIBE
+};
+
+const textCosts = {
+  'gpt-4o-mini': COST_GPT_MINI,
+  'gpt-4o': COST_GPT4
+};
+
 function addStatus(message) {
   const logEntry = document.createElement('div');
   logEntry.textContent = new Date().toLocaleTimeString() + ': ' + message;
@@ -159,6 +174,12 @@ async function onRecordingStop() {
 
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
   
+  const audioUrl = URL.createObjectURL(blob);
+  const audio = new Audio(audioUrl);
+  await new Promise(resolve => { audio.onloadedmetadata = resolve; });
+  const durationMinutes = audio.duration / 60;
+  URL.revokeObjectURL(audioUrl);
+  
   // Transcribe audio using OpenAI API directly
   try {
     const apiKey = getApiKey();
@@ -181,7 +202,8 @@ async function onRecordingStop() {
     if (resp.ok) {
       transcriptText.textContent = j.text || '';
       transcriptArea.hidden = false;
-      addStatus('Transcription complete');
+      const transCost = transCosts[transModelEl.value] * durationMinutes;
+      addStatus(`Transcription complete, cost: $${transCost.toFixed(4)}`);
     } else {
       addStatus('Transcription failed');
       alert('Transcription error: ' + (j.error?.message || JSON.stringify(j)));
@@ -230,7 +252,11 @@ useTranscriptBtn.addEventListener('click', async () => {
       const text = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
       emailText.textContent = text;
       emailArea.hidden = false;
-      addStatus('Email generated');
+      const usage = j.usage;
+      const tokens = usage.total_tokens;
+      const costPer1K = textCosts[textModelEl.value];
+      const textCost = (tokens / 1000) * costPer1K;
+      addStatus(`Email generated, cost: $${textCost.toFixed(4)}`);
     } else {
       addStatus('Generation failed');
       alert('Generation error: ' + (j.error?.message || JSON.stringify(j)));
@@ -319,6 +345,13 @@ async function onTweakRecordingStop() {
 
   addStatus('Transcribing tweak instructions...');
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+  
+  const audioUrl = URL.createObjectURL(blob);
+  const audio = new Audio(audioUrl);
+  await new Promise(resolve => { audio.onloadedmetadata = resolve; });
+  const durationMinutes = audio.duration / 60;
+  URL.revokeObjectURL(audioUrl);
+  
   try {
     const apiKey = getApiKey();
     if (!apiKey) return;
@@ -335,6 +368,9 @@ async function onTweakRecordingStop() {
     });
     const j = await resp.json();
     if (!resp.ok) return alert('Tweak transcription error: ' + (j.error?.message || JSON.stringify(j)));
+
+    const tweakTransCost = transCosts[transModelEl.value] * durationMinutes;
+    addStatus(`Tweak transcription complete, cost: $${tweakTransCost.toFixed(4)}`);
 
     const tweakText = j.text || '';
     // Re-run generation with tweak instructions
@@ -360,7 +396,11 @@ async function onTweakRecordingStop() {
     if (genResp.ok) {
       const text = (genJ.choices && genJ.choices[0] && genJ.choices[0].message && genJ.choices[0].message.content) || '';
       emailText.textContent = text;
-      addStatus('Email updated with tweaks');
+      const usage = genJ.usage;
+      const tokens = usage.total_tokens;
+      const costPer1K = textCosts[textModelEl.value];
+      const tweakTextCost = (tokens / 1000) * costPer1K;
+      addStatus(`Email updated with tweaks, cost: $${tweakTextCost.toFixed(4)}`);
     } else {
       alert('Generation error: ' + (genJ.error?.message || JSON.stringify(genJ)));
     }
