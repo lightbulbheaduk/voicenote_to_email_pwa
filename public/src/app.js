@@ -240,7 +240,7 @@ useTranscriptBtn.addEventListener('click', async () => {
       body: JSON.stringify({
         model: textModelEl.value,
         messages: [
-          { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Use headings, paragraphs, bullet points and a sign-off when appropriate. Detect if a call-to-action is needed.' },
+          { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Apply the tweak instructions to improve the previous email. Use headings, paragraphs, bullet points and a sign-off when appropriate, but pay close attention to the style specified and if marked as informal, ensure it is informal.' },
           { role: 'user', content: prompt }
         ],
         max_tokens: 800
@@ -386,7 +386,7 @@ async function onTweakRecordingStop() {
       body: JSON.stringify({
         model: textModelEl.value,
         messages: [
-          { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Apply the tweak instructions to improve the previous email. Use headings, paragraphs, bullet points and a sign-off when appropriate.' },
+          { role: 'system', content: 'You are an assistant that rewrites user notes into a clean, professional email. Apply the tweak instructions to improve the previous email. Use headings, paragraphs, bullet points and a sign-off when appropriate, but pay close attention to the style specified and if marked as informal, ensure it is informal.' },
           { role: 'user', content: prompt }
         ],
         max_tokens: 800
