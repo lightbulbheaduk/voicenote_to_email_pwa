@@ -1,6 +1,7 @@
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
-const statusEl = document.getElementById('status');
+const statusLog = document.getElementById('statusLog');
+const statusSection = document.getElementById('statusSection');
 const transcriptArea = document.getElementById('transcriptArea');
 const transcriptText = document.getElementById('transcriptText');
 const reRecordBtn = document.getElementById('reRecord');
@@ -17,6 +18,15 @@ const textModelEl = document.getElementById('textModel');
 const styleSelect = document.getElementById('styleSelect');
 const settingsArea = document.getElementById('settingsArea');
 const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+
+function addStatus(message) {
+  const logEntry = document.createElement('div');
+  logEntry.textContent = new Date().toLocaleTimeString() + ': ' + message;
+  statusLog.appendChild(logEntry);
+  statusLog.scrollTop = statusLog.scrollHeight;
+  const summary = statusSection.querySelector('summary');
+  summary.textContent = 'Status Log: ' + message;
+}
 
 toggleSettingsBtn.addEventListener('click', () => {
   const collapsed = settingsArea.classList.toggle('collapsed');
@@ -42,6 +52,7 @@ window.addEventListener('load', () => {
   } else {
     recordBtn.disabled = true;
   }
+  addStatus('App loaded, idle');
 });
 
 saveKeyBtn.addEventListener('click', () => {
@@ -83,8 +94,13 @@ async function ensureMicPermission() {
 }
 
 recordBtn.addEventListener('click', async () => {
+  addStatus('Requesting microphone permission...');
   const ok = await ensureMicPermission();
-  if (!ok) return;
+  if (!ok) {
+    addStatus('Microphone permission denied');
+    return;
+  }
+  addStatus('Microphone ready, starting recording...');
   recordedChunks = [];
   currentStream = await navigator.mediaDevices.getUserMedia({ audio: true }); // <--- store stream globally
   mediaRecorder = new MediaRecorder(currentStream);
@@ -93,7 +109,7 @@ recordBtn.addEventListener('click', async () => {
   });
   mediaRecorder.addEventListener('stop', onRecordingStop);
   mediaRecorder.start();
-  statusEl.textContent = 'Recording...';
+  addStatus('Recording...');
   recordBtn.disabled = true;
   stopBtn.disabled = false;
 
@@ -109,7 +125,7 @@ stopBtn.addEventListener('click', () => {
 
 async function onRecordingStop() {
   clearTimeout(recordTimeout);
-  statusEl.textContent = 'Processing recording...';
+  addStatus('Recording stopped, processing audio...');
   recordBtn.disabled = false;
   stopBtn.disabled = true;
 
@@ -128,6 +144,7 @@ async function onRecordingStop() {
     const apiKey = getApiKey();
     if (!apiKey) return;
 
+    addStatus('Sending audio for transcription...');
     const form = new FormData();
     form.append('file', blob, 'voice.webm');
     form.append('model', transModelEl.value);
@@ -144,14 +161,14 @@ async function onRecordingStop() {
     if (resp.ok) {
       transcriptText.textContent = j.text || '';
       transcriptArea.hidden = false;
-      statusEl.textContent = 'Transcription complete';
+      addStatus('Transcription complete');
     } else {
-      statusEl.textContent = 'Transcription failed';
+      addStatus('Transcription failed');
       alert('Transcription error: ' + (j.error?.message || JSON.stringify(j)));
     }
   } catch (err) {
     console.error(err);
-    statusEl.textContent = 'Transcription failed';
+    addStatus('Transcription failed');
     alert('Transcription failed: ' + err.message);
   }
 }
@@ -160,13 +177,13 @@ reRecordBtn.addEventListener('click', () => {
   transcriptArea.hidden = true;
   transcriptText.textContent = '';
   recordedChunks = [];
-  statusEl.textContent = 'Idle';
+  addStatus('Reset, idle');
 });
 
 useTranscriptBtn.addEventListener('click', async () => {
   const transcript = transcriptText.textContent.trim();
   if (!transcript) return alert('No transcript present');
-  statusEl.textContent = 'Generating email...';
+  addStatus('Generating email...');
   try {
     const apiKey = getApiKey();
     if (!apiKey) return;
@@ -193,14 +210,14 @@ useTranscriptBtn.addEventListener('click', async () => {
       const text = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
       emailText.textContent = text;
       emailArea.hidden = false;
-      statusEl.textContent = 'Email generated';
+      addStatus('Email generated');
     } else {
-      statusEl.textContent = 'Generation failed';
+      addStatus('Generation failed');
       alert('Generation error: ' + (j.error?.message || JSON.stringify(j)));
     }
   } catch (err) {
     console.error(err);
-    statusEl.textContent = 'Generation failed';
+    addStatus('Generation failed');
     alert('Generation failed: ' + err.message);
   }
 });
@@ -216,14 +233,19 @@ copyEmailBtn.addEventListener('click', async () => {
 });
 
 tweakEmailBtn.addEventListener('click', async () => {
+  addStatus('Requesting microphone for tweak...');
   const ok = await ensureMicPermission();
-  if (!ok) return;
+  if (!ok) {
+    addStatus('Microphone permission denied for tweak');
+    return;
+  }
 
   if (tweakRecorder && tweakRecorder.state === 'recording') {
     alert('Tweak recording already in progress.');
     return;
   }
 
+  addStatus('Starting tweak recording...');
   recordedChunks = [];
   tweakStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   tweakRecorder = new MediaRecorder(tweakStream);
@@ -234,7 +256,7 @@ tweakEmailBtn.addEventListener('click', async () => {
   tweakRecorder.addEventListener('stop', onTweakRecordingStop);
 
   tweakRecorder.start();
-  statusEl.textContent = 'Recording tweak instructions (max 2 minutes)...';
+  addStatus('Recording tweak instructions (max 2 minutes)...');
   tweakEmailBtn.disabled = true;
   stopTweakBtn.disabled = false; // <-- enable stop button
 
@@ -251,6 +273,7 @@ stopTweakBtn.addEventListener('click', () => {
 
 async function onTweakRecordingStop() {
   clearTimeout(tweakTimeout);
+  addStatus('Tweak recording stopped, processing...');
   stopTweakBtn.disabled = true; // <-- disable after stopping
   tweakEmailBtn.disabled = false;
 
@@ -262,7 +285,7 @@ async function onTweakRecordingStop() {
   // belt and braces
   navigator.mediaDevices.getUserMedia({ audio: false });
 
-  statusEl.textContent = 'Processing tweak instructions...';
+  addStatus('Transcribing tweak instructions...');
   const blob = new Blob(recordedChunks, { type: 'audio/webm' });
   try {
     const apiKey = getApiKey();
@@ -283,6 +306,7 @@ async function onTweakRecordingStop() {
 
     const tweakText = j.text || '';
     // Re-run generation with tweak instructions
+    addStatus('Applying tweaks to email...');
     const origTranscript = transcriptText.textContent.trim();
     const prompt = `Style: ${styleSelect.value}\n\nOriginal Notes:\n${origTranscript}\n\nTweak Instructions:\n${tweakText}`;
     const genResp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -304,7 +328,7 @@ async function onTweakRecordingStop() {
     if (genResp.ok) {
       const text = (genJ.choices && genJ.choices[0] && genJ.choices[0].message && genJ.choices[0].message.content) || '';
       emailText.textContent = text;
-      statusEl.textContent = 'Email updated with tweaks';
+      addStatus('Email updated with tweaks');
     } else {
       alert('Generation error: ' + (genJ.error?.message || JSON.stringify(genJ)));
     }

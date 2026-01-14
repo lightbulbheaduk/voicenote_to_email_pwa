@@ -22,6 +22,11 @@
   <main class="container">
     <h1>VoiceNote → Email</h1>
 
+    <details id="statusSection" class="panel sticky-status">
+      <summary>Status Log</summary>
+      <div id="statusLog" aria-live="polite"></div>
+    </details>
+
     <!-- Collapsed settings trigger -->
     <button id="toggleSettingsBtn" class="collapser">Show Settings</button>
     <section id="settingsArea" class="panel collapsed">
@@ -50,10 +55,6 @@
       </div>
     </section>
 
-    <section id="statusSection" class="panel">
-      <h2>Status</h2>
-      <div id="status" aria-live="polite">Idle</div>
-    </section>
     <section id="controls">
       <button id="recordBtn">Record (up to 5 minutes)</button>
       <button id="stopBtn" disabled>Stop</button>
