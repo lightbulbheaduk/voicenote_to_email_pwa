@@ -9,17 +9,29 @@ describe('VoiceNote to Email PWA', () => {
   beforeEach(() => {
     // Set up DOM similar to index.html
     document.body.innerHTML = `
-      <div id="statusLog"></div>
       <div id="statusSection"><summary>Status Log</summary><div id="statusLog"></div></div>
       <input id="apiKey" />
       <button id="saveKeyBtn"></button>
       <button id="clearKeyBtn"></button>
       <select id="transModel"><option value="whisper-1">whisper-1</option><option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option></select>
       <select id="textModel"><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option></select>
+      <select id="styleSelect"><option value="formal">formal</option></select>
+      <div id="settingsArea"></div>
+      <button id="toggleSettingsBtn"></button>
+      <button id="recordBtn"></button>
+      <button id="stopBtn"></button>
+      <div id="transcriptArea"></div>
       <pre id="transcriptText"></pre>
+      <button id="reRecord"></button>
+      <button id="useTranscript"></button>
       <button id="copyTranscript"></button>
+      <div id="emailArea"></div>
       <pre id="emailText"></pre>
       <button id="copyEmail"></button>
+      <button id="tweakEmail"></button>
+      <button id="stopTweakBtn"></button>
+      <button id="installButton"></button>
+      <div id="instructions"></div>
     `;
 
     // Mock localStorage
@@ -32,6 +44,11 @@ describe('VoiceNote to Email PWA', () => {
     // Mock navigator.clipboard
     global.navigator.clipboard = {
       writeText: jest.fn().mockResolvedValue()
+    };
+
+    // Mock navigator.serviceWorker
+    global.navigator.serviceWorker = {
+      register: jest.fn().mockResolvedValue({})
     };
 
     // Mock fetch
@@ -64,6 +81,14 @@ describe('VoiceNote to Email PWA', () => {
     // Mock URL
     global.URL.createObjectURL = jest.fn(() => 'blob:url');
     global.URL.revokeObjectURL = jest.fn();
+
+    // Mock window.addEventListener to avoid beforeinstallprompt issues
+    const originalAddEventListener = window.addEventListener;
+    window.addEventListener = jest.fn((event, callback) => {
+      if (event !== 'beforeinstallprompt') {
+        originalAddEventListener.call(window, event, callback);
+      }
+    });
 
     // Execute the app.js in global scope
     global.eval(appJsContent);
