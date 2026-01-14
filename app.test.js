@@ -37,11 +37,6 @@ describe('VoiceNote to Email PWA', () => {
       <div id="instructions"></div>
     `;
 
-    // Mock localStorage using spies
-    jest.spyOn(window.localStorage, 'getItem');
-    jest.spyOn(window.localStorage, 'setItem');
-    jest.spyOn(window.localStorage, 'removeItem');
-
     // Mock navigator.clipboard
     window.navigator.clipboard = {
       writeText: jest.fn().mockResolvedValue()
@@ -93,6 +88,14 @@ describe('VoiceNote to Email PWA', () => {
 
     // Execute the app.js in global scope
     global.eval(appJsContent);
+
+    // Now mock localStorage after eval to avoid conflicts
+    delete window.localStorage;
+    window.localStorage = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn()
+    };
   });
 
   afterEach(() => {
