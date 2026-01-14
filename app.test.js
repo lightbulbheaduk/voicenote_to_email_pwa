@@ -37,12 +37,10 @@ describe('VoiceNote to Email PWA', () => {
       <div id="instructions"></div>
     `;
 
-    // Mock localStorage
-    window.localStorage = {
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      removeItem: jest.fn()
-    };
+    // Mock localStorage using spies
+    jest.spyOn(window.localStorage, 'getItem');
+    jest.spyOn(window.localStorage, 'setItem');
+    jest.spyOn(window.localStorage, 'removeItem');
 
     // Mock navigator.clipboard
     window.navigator.clipboard = {
