@@ -6,6 +6,7 @@ const transcriptArea = document.getElementById('transcriptArea');
 const transcriptText = document.getElementById('transcriptText');
 const reRecordBtn = document.getElementById('reRecord');
 const useTranscriptBtn = document.getElementById('useTranscript');
+const copyTranscriptBtn = document.getElementById('copyTranscript');
 const emailArea = document.getElementById('emailArea');
 const emailText = document.getElementById('emailText');
 const copyEmailBtn = document.getElementById('copyEmail');
@@ -246,6 +247,17 @@ copyEmailBtn.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(text);
     alert('Email copied to clipboard');
+  } catch (err) {
+    console.error(err);
+    alert('Copy failed: ' + err.message);
+  }
+});
+
+copyTranscriptBtn.addEventListener('click', async () => {
+  const text = transcriptText.textContent.replace(/\n\s*\n/g, '\n').trim();
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Transcript copied to clipboard');
   } catch (err) {
     console.error(err);
     alert('Copy failed: ' + err.message);
