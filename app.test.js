@@ -3,7 +3,10 @@ const path = require('path');
 
 // Load the app.js content
 const appJsPath = path.join(__dirname, 'public', 'src', 'app.js');
-const appJsContent = fs.readFileSync(appJsPath, 'utf8');
+let appJsContent = fs.readFileSync(appJsPath, 'utf8');
+
+// Modify the content to make constants global for testing
+appJsContent = appJsContent.replace(/const (COST_\w+|transCosts|textCosts) =/g, 'global.$1 =');
 
 describe('VoiceNote to Email PWA', () => {
   beforeEach(() => {
@@ -35,20 +38,25 @@ describe('VoiceNote to Email PWA', () => {
     `;
 
     // Mock localStorage
-    global.localStorage = {
+    window.localStorage = {
       getItem: jest.fn(),
       setItem: jest.fn(),
       removeItem: jest.fn()
     };
 
     // Mock navigator.clipboard
-    global.navigator.clipboard = {
+    window.navigator.clipboard = {
       writeText: jest.fn().mockResolvedValue()
     };
 
     // Mock navigator.serviceWorker
-    global.navigator.serviceWorker = {
+    window.navigator.serviceWorker = {
       register: jest.fn().mockResolvedValue({})
+    };
+
+    // Mock navigator.mediaDevices
+    window.navigator.mediaDevices = {
+      getUserMedia: jest.fn().mockResolvedValue({})
     };
 
     // Mock fetch
@@ -56,11 +64,6 @@ describe('VoiceNote to Email PWA', () => {
 
     // Mock alert
     global.alert = jest.fn();
-
-    // Mock navigator.mediaDevices
-    global.navigator.mediaDevices = {
-      getUserMedia: jest.fn().mockResolvedValue({})
-    };
 
     // Mock MediaRecorder
     global.MediaRecorder = jest.fn().mockImplementation(() => ({
@@ -123,12 +126,12 @@ describe('VoiceNote to Email PWA', () => {
   });
 
   test('getApiKey returns key from localStorage', () => {
-    global.localStorage.getItem.mockReturnValue('sk-test');
+    window.localStorage.getItem.mockReturnValue('sk-test');
     expect(global.getApiKey()).toBe('sk-test');
   });
 
   test('getApiKey alerts and returns null if no key', () => {
-    global.localStorage.getItem.mockReturnValue(null);
+    window.localStorage.getItem.mockReturnValue(null);
     expect(global.getApiKey()).toBeNull();
     expect(global.alert).toHaveBeenCalledWith('Please enter and save your OpenAI API key first.');
   });
@@ -138,14 +141,14 @@ describe('VoiceNote to Email PWA', () => {
     apiKeyInput.value = 'sk-newkey';
     const saveBtn = document.getElementById('saveKeyBtn');
     saveBtn.click();
-    expect(global.localStorage.setItem).toHaveBeenCalledWith('openai_api_key', 'sk-newkey');
+    expect(window.localStorage.setItem).toHaveBeenCalledWith('openai_api_key', 'sk-newkey');
     expect(global.alert).toHaveBeenCalledWith('API key saved to browser storage');
   });
 
   test('clearKeyBtn clears API key from localStorage', () => {
     const clearBtn = document.getElementById('clearKeyBtn');
     clearBtn.click();
-    expect(global.localStorage.removeItem).toHaveBeenCalledWith('openai_api_key');
+    expect(window.localStorage.removeItem).toHaveBeenCalledWith('openai_api_key');
     expect(global.alert).toHaveBeenCalledWith('API key cleared');
   });
 

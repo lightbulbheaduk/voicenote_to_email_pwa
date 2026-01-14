@@ -64,7 +64,40 @@ Since this is a client-side PWA, you can host it on any static web host.
 
 ## Tests
 
-TODO!
+This project includes a comprehensive test suite that runs automatically on every deployment via GitHub Actions.
+
+### Running Tests Locally
+
+```bash
+npm install
+npm test
+```
+
+### Test Coverage
+
+The test suite covers:
+
+- **Cost Calculations**: Validates pricing for OpenAI API calls (transcription and text generation)
+- **API Key Management**: Tests saving, retrieving, and clearing API keys from localStorage
+- **UI Interactions**: 
+  - Status logging functionality
+  - Clipboard operations for copying transcripts and emails
+  - Button click handlers
+- **Data Processing**: Text normalization for clipboard copy operations
+
+### CI/CD Integration
+
+Tests run automatically on:
+- Push to `main` branch
+- Pull requests targeting `main`
+
+The deployment workflow will fail if tests don't pass, ensuring code quality.
+
+### Test Framework
+
+- **Jest** with **jsdom** for DOM simulation
+- Mocks for browser APIs (localStorage, clipboard, media devices, etc.)
+- Full app environment simulation for integration testing
 
 ## Model Configuration
 
