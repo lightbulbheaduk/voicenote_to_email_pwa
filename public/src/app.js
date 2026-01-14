@@ -223,8 +223,9 @@ useTranscriptBtn.addEventListener('click', async () => {
 });
 
 copyEmailBtn.addEventListener('click', async () => {
+  const text = emailText.textContent.replace(/\n\s*\n/g, '\n').trim();
   try {
-    await navigator.clipboard.writeText(emailText.textContent);
+    await navigator.clipboard.writeText(text);
     alert('Email copied to clipboard');
   } catch (err) {
     console.error(err);
